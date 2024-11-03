@@ -15,7 +15,7 @@ namespace Automate.Utils
 
         public MongoDBService(string databaseName)
         {
-            var client = new MongoClient("mongodb://localhost:27017"); // URL du serveur MongoDB
+            var client = new MongoClient("mongodb+srv://atounaok:June7600@cluster0.rekox.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"); // URL du serveur MongoDB
             _database = client.GetDatabase(databaseName);
             _users = _database.GetCollection<UserModel>("Users");
         }

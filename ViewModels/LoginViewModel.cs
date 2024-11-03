@@ -46,7 +46,6 @@ namespace Automate.ViewModels
 
             _navigationService = new NavigationService();
             _window = openedWindow;
-
         }
 
         //propriétés
