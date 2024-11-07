@@ -7,6 +7,47 @@
         mc:Ignorable="d"
         Title="AccueilWindow" Height="450" Width="800">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="350"/>
+        </Grid.RowDefinitions>
+        <!--Grid qui sert à regroupe l'entête, donc le titre du mois et les boutons importants-->
+        <Grid x:Name="EnteteCalendrier" Grid.Row="0">
+            
+            <!--Mois Choisi récupérer-->
+            <TextBlock x:Name="titreMois" FontSize="2.5" HorizontalAlignment="Center">Hello</TextBlock>
+            
+        </Grid>
+        <!--Grid avec tous les jours du moins, elle est interactive pour pouvoir modifier-->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="550"/>
+                <ColumnDefinition Width="250"/>
+            </Grid.ColumnDefinitions>
+
+            <!--Grille calendrier -->
+            <Grid x:Name="GridCalendrier" Grid.Column="0">
+                <!--On fait 7(jours)x6(Semaines)-->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+            
+            </Grid>
+            <TextBlock x:Name="tbDetails" Grid.Column="1"></TextBlock>
+        </Grid>
     </Grid>
 </Window>
