@@ -1,12 +1,73 @@
 ﻿<Window x:Class="Automate.Views.AccueilWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Automate.Views"
-        mc:Ignorable="d"
-        Title="AccueilWindow" Height="450" Width="800">
+        Title="AccueilWindow" Height="600" Width="800" Background="#f0f2f5">
     <Grid>
-        
+        <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <!-- Titre du Mois -->
+            <TextBlock Text="{Binding CurrentMonthYear}" FontSize="28" FontWeight="Bold"
+                       Foreground="#333" Margin="20" HorizontalAlignment="Center"/>
+
+            <!-- Navigation entre les mois -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
+                <Button Content="◄ Mois Précédent" Command="{Binding PreviousMonthCommand}" 
+                        Margin="10" Padding="8,4" 
+                        Background="#4CAF50" Foreground="White" 
+                        FontWeight="SemiBold" BorderBrush="{x:Null}" 
+                        />
+                <Button Content="Mois Suivant ►" Command="{Binding NextMonthCommand}" 
+                        Margin="10" Padding="8,4" 
+                        Background="#4CAF50" Foreground="White" 
+                        FontWeight="SemiBold" BorderBrush="{x:Null}" 
+                        />
+            </StackPanel>
+
+            <!-- Affichage du Calendrier -->
+            <ItemsControl ItemsSource="{Binding CalendarDays}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="7" Rows="6"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="White" CornerRadius="8" 
+                                BorderBrush="#DDD" BorderThickness="1" 
+                                Padding="5" Margin="5" 
+                                Effect="{DynamicResource DropShadowEffect}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Day}" FontWeight="Bold" 
+                                           HorizontalAlignment="Center" Foreground="#333"/>
+                                <ItemsControl ItemsSource="{Binding Tasks}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding}" FontSize="10" Foreground="#555"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Légende -->
+            <StackPanel Orientation="Vertical" Margin="20">
+                <TextBlock Text="Légende" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
+                <ItemsControl ItemsSource="{Binding LegendItems}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" FontSize="14" Foreground="#555"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </StackPanel>
     </Grid>
+
+    <!-- Définir DropShadowEffect pour l'ombre -->
+    <Window.Resources>
+        <DropShadowEffect x:Key="DropShadowEffect" ShadowDepth="2" Color="Gray" Opacity="0.3" BlurRadius="8"/>
+    </Window.Resources>
 </Window>
