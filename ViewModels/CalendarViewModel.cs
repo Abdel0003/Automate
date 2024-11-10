@@ -1,15 +1,19 @@
-﻿using System;
+﻿using Automate.Models;
+using Microsoft.VisualBasic;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Controls;
+using System.Windows;
 using System.Windows.Input;
 
 namespace Automate.ViewModels
 {
     public class CalendarViewModel : INotifyPropertyChanged
     {
-        private DateTime _currentDate;
-        public string CurrentMonthYear => _currentDate.ToString("MMMM yyyy");
+        private Journee _currentDate;
+        public string CurrentMonthYear => $"{new DateTime(1, _currentDate.NumeroMois, 1).ToString("MMMM")} {_currentDate.Annee}";
 
         // Collection pour les jours du mois
         public ObservableCollection<CalendarDay> CalendarDays { get; set; }
@@ -21,12 +25,48 @@ namespace Automate.ViewModels
         public ICommand PreviousMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
 
+
+        /// <summary>
+        /// Attribut du jour sélectionné
+        /// </summary>
+        private Journee _jourSelect;
+        public Journee JourSelect
+        {
+            get => _jourSelect;
+            set
+            {
+                _jourSelect= value;
+                OnPropertyChanged(nameof(JourSelect));
+            }
+        }
+
+        public ObservableCollection<Journee> Journees { get; set; }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public CalendarViewModel()
         {
             // Initialiser la date actuelle
-            _currentDate = DateTime.Now;
+            _currentDate = new Journee(DateTime.Now);
+
+            //Codage en dure pour les tests
+            Journees = new ObservableCollection<Journee>{
+                new Journee(new DateTime(2024, 11, 2)),
+                new Journee(new DateTime(2024, 11, 6)),
+                new Journee(new DateTime(2024, 11, 8)),
+                new Journee(new DateTime(2024, 11, 9)),
+                new Journee(new DateTime(2024, 11, 13)),
+                new Journee(new DateTime(2024, 11, 14)),
+            };
+            Journees[0].Taches.Add(new Tache("Semis"));
+            Journees[0].Taches.Add(new Tache("Rempotage"));
+            Journees[1].Taches.Add(new Tache("Arrosage"));
+            Journees[1].Taches.Add(new Tache("Semis"));
+            Journees[2].Taches.Add(new Tache("Commandes"));
+            Journees[2].Taches.Add(new Tache("Arrosage"));
+            Journees[3].Taches.Add(new Tache("Semis"));
+            Journees[3].Taches.Add(new Tache("Rempotage"));
+            Journees[4].Taches.Add(new Tache("Arrosage"));
 
             // Initialiser les collections
             CalendarDays = new ObservableCollection<CalendarDay>();
@@ -46,7 +86,7 @@ namespace Automate.ViewModels
         // Méthode pour aller au mois précédent
         private void GoToPreviousMonth()
         {
-            _currentDate = _currentDate.AddMonths(-1);
+            _currentDate.Date = _currentDate.Date.AddMonths(-1);
             OnPropertyChanged(nameof(CurrentMonthYear));
             LoadCalendarDays();
         }
@@ -54,7 +94,7 @@ namespace Automate.ViewModels
         // Méthode pour aller au mois suivant
         private void GoToNextMonth()
         {
-            _currentDate = _currentDate.AddMonths(1);
+            _currentDate.Date = _currentDate.Date.AddMonths(1);
             OnPropertyChanged(nameof(CurrentMonthYear));
             LoadCalendarDays();
         }
@@ -65,16 +105,38 @@ namespace Automate.ViewModels
             CalendarDays.Clear();
 
             // Obtenez le nombre de jours dans le mois actuel
-            var daysInMonth = DateTime.DaysInMonth(_currentDate.Year, _currentDate.Month);
+            var daysInMonth = DateTime.DaysInMonth(_currentDate.Annee, _currentDate.NumeroMois);
 
             // Remplissez chaque jour avec des tâches exemple
             for (int day = 1; day <= daysInMonth; day++)
             {
+                ObservableCollection<Tache> OCTache = new ObservableCollection<Tache>();
+
+                if (Journees is not null)
+                {
+                    Journee journee = Journees[0];
+                    foreach(Journee j in Journees)
+                    {
+                        bool estValide = false;
+                        if (j.Date.Day == day)
+                        {
+                            journee = j;
+                            estValide = true;
+                        }
+
+                        if (estValide)
+                            foreach (Tache t in journee.Taches)
+                                OCTache.Add(t);
+                    }
+
+                }
+
                 CalendarDays.Add(new CalendarDay
                 {
                     Day = day,
-                    Tasks = new ObservableCollection<string> { "Tâche 1", "Tâche 2" } // Remplacez par des tâches réelles si disponible
+                    Tasks = OCTache
                 });
+
             }
         }
 
@@ -85,10 +147,14 @@ namespace Automate.ViewModels
         }
     }
 
+    
+
     // Classe pour représenter un jour dans le calendrier
     public class CalendarDay
     {
         public int Day { get; set; } // Jour du mois
-        public ObservableCollection<string> Tasks { get; set; } // Collection de tâches pour le jour
+        public ObservableCollection<Tache> Tasks { get; set; } // Collection de tâches pour le jour
+
     }
+
 }

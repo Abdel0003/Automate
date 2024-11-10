@@ -68,6 +68,20 @@
                     </ItemsControl>
                 </StackPanel>
             </StackPanel>
+            <StackPanel HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                <Button x:Name="btnModifier" Width="75"
+                        Command="{Binding ModifierTache}" 
+                        Margin="10" Padding="8,4" 
+                        Background="#4CAF50" Foreground="White" 
+                        FontWeight="SemiBold" BorderBrush="{x:Null}" 
+                        > Modifier</Button>
+                <Button x:Name="btnAjouter" Width="75"
+                        Command="{Binding AjouterTache}" 
+                        Margin="10" Padding="8,4" 
+                        Background="#4CAF50" Foreground="White" 
+                        FontWeight="SemiBold" BorderBrush="{x:Null}" 
+                        >Ajouter</Button>
+            </StackPanel>
         </Grid>
     </ScrollViewer>
     <!-- Définir DropShadowEffect pour l'ombre -->
