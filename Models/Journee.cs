@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Automate.Models
 {
-    public class Journee
+    public class Journee : IJournee
     {
 		const int MAX_MOIS = 12;
 		const int MIN_MOIS = 1;
@@ -82,7 +82,11 @@ namespace Automate.Models
 		public List<Tache> Taches
 		{
 			get { return _taches; }
-			set { _taches = value; }
+			set { 
+				if(value is null)
+					throw new ArgumentNullException("La liste ne peut pas recevoir de valeurs null.");
+
+				_taches = value; }
 		}
 
 
