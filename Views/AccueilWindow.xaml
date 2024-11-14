@@ -4,12 +4,23 @@
         Title="AccueilWindow" Height="600" Width="800" Background="#f0f2f5" Loaded="Window_Loaded">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid>
+            <!-- AccueilWindow.xaml -->
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <!-- Titre du Mois -->
+                <!-- Affichage du message de bienvenue -->
+                <TextBlock Text="{Binding Username, StringFormat='Bienvenue, {0} !'}" 
+               FontSize="24" FontWeight="Bold" Foreground="#333" HorizontalAlignment="Center" Margin="20"/>
+
+                <!-- Bouton pour consulter le calendrier -->
+                <Button Content="Consulter le calendrier" Width="200" Height="40" Margin="20"
+            Command="{Binding ViewCalendarCommand}"/>
+            </StackPanel>
+
+            <!--<StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                --><!-- Titre du Mois --><!--
                 <TextBlock Text="{Binding CurrentMonthYear}" FontSize="28" FontWeight="Bold"
                        Foreground="#333" Margin="20" HorizontalAlignment="Center"/>
 
-                <!-- Navigation entre les mois -->
+                --><!-- Navigation entre les mois --><!--
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
                     <Button Content="◄ Mois Précédent" Command="{Binding PreviousMonthCommand}" 
                         Margin="10" Padding="8,4" 
@@ -23,7 +34,7 @@
                         />
                 </StackPanel>
                 <Grid>
-                    <!-- Affichage du Calendrier -->
+                    --><!-- Affichage du Calendrier --><!--
                     <ItemsControl ItemsSource="{Binding CalendarDays}">
                         <ItemsControl.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -56,7 +67,7 @@
                         <TextBlock Text="{Binding JourSelect}"/>
                     </StackPanel>
                 </Grid>
-                <!-- Légende -->
+                --><!-- Légende --><!--
                 <StackPanel Orientation="Vertical" Margin="20">
                     <TextBlock Text="Légende" FontSize="18" FontWeight="Bold" Foreground="#333" Margin="0,0,0,10"/>
                     <ItemsControl ItemsSource="{Binding LegendItems}">
@@ -81,7 +92,7 @@
                         Background="#4CAF50" Foreground="White" 
                         FontWeight="SemiBold" BorderBrush="{x:Null}" 
                         >Ajouter</Button>
-            </StackPanel>
+            </StackPanel>-->
         </Grid>
     </ScrollViewer>
     <!-- Définir DropShadowEffect pour l'ombre -->

@@ -1,11 +1,9 @@
 ﻿using Automate.Models;
-using Microsoft.VisualBasic;
+using Automate.Views;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Controls;
-using System.Windows;
 using System.Windows.Input;
 
 namespace Automate.ViewModels
@@ -13,6 +11,17 @@ namespace Automate.ViewModels
     public class CalendarViewModel : INotifyPropertyChanged
     {
         private Journee _currentDate;
+        
+        private bool _isAdmin;
+        public bool IsAdmin
+        {
+            get => _isAdmin;
+            set
+            {
+                _isAdmin = value;
+                OnPropertyChanged();
+            }
+        }
         public string CurrentMonthYear => $"{new DateTime(1, _currentDate.NumeroMois, 1).ToString("MMMM")} {_currentDate.Annee}";
 
         // Collection pour les jours du mois
@@ -24,6 +33,7 @@ namespace Automate.ViewModels
         // Commandes pour naviguer entre les mois
         public ICommand PreviousMonthCommand { get; }
         public ICommand NextMonthCommand { get; }
+        public ICommand ViewCalendarCommand { get; }
 
 
         /// <summary>
@@ -35,8 +45,19 @@ namespace Automate.ViewModels
             get => _jourSelect;
             set
             {
-                _jourSelect= value;
+                _jourSelect = value;
                 OnPropertyChanged(nameof(JourSelect));
+            }
+        }
+
+        private string _username;
+        public string Username
+        {
+            get => _username;
+            set
+            {
+                _username = value;
+                OnPropertyChanged();
             }
         }
 
@@ -44,8 +65,11 @@ namespace Automate.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public CalendarViewModel()
+        public CalendarViewModel(string username, bool isAdmin)
         {
+            Username = username;
+            IsAdmin = isAdmin;
+
             // Initialiser la date actuelle
             _currentDate = new Journee(DateTime.Now);
 
@@ -76,6 +100,7 @@ namespace Automate.ViewModels
             };
 
             // Initialiser les commandes de navigation
+            ViewCalendarCommand = new RelayCommand(OpenModificationWindow);
             PreviousMonthCommand = new RelayCommand(GoToPreviousMonth);
             NextMonthCommand = new RelayCommand(GoToNextMonth);
 
@@ -99,6 +124,12 @@ namespace Automate.ViewModels
             LoadCalendarDays();
         }
 
+        private void OpenModificationWindow()
+        {
+            var modificationWindow = new ModificationWindow(IsAdmin);
+            modificationWindow.Show();
+        }
+
         // Méthode pour charger les jours du mois actuel
         private void LoadCalendarDays()
         {
@@ -115,7 +146,7 @@ namespace Automate.ViewModels
                 if (Journees is not null)
                 {
                     Journee journee = Journees[0];
-                    foreach(Journee j in Journees)
+                    foreach (Journee j in Journees)
                     {
                         bool estValide = false;
                         if (j.Date.Day == day)
@@ -147,7 +178,7 @@ namespace Automate.ViewModels
         }
     }
 
-    
+
 
     // Classe pour représenter un jour dans le calendrier
     public class CalendarDay

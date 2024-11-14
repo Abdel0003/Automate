@@ -20,10 +20,15 @@ namespace Automate.Views
     /// </summary>
     public partial class AccueilWindow : Window
     {
+
         public AccueilWindow()
         {
             InitializeComponent();
-            DataContext = new CalendarViewModel();
+        }
+
+        public AccueilWindow(CalendarViewModel viewModel) : this()
+        {
+            DataContext = viewModel;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

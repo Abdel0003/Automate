@@ -89,9 +89,11 @@ namespace Automate.Models
 				_taches = value; }
 		}
 
+        DateTime IJournee.Journee { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-		//On BESOIN de la date, sinon on initialise une nouvelle liste de tâches
-		public Journee(DateTime date)
+
+        //On BESOIN de la date, sinon on initialise une nouvelle liste de tâches
+        public Journee(DateTime date)
         {
             Date = date;
 			ObtenirAnnee();

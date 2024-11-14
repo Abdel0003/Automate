@@ -94,6 +94,7 @@ namespace Automate.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        // LoginViewModel.cs
         public void Authenticate()
         {
             ValidateProperty(nameof(Username));
@@ -106,17 +107,17 @@ namespace Automate.ViewModels
                 {
                     AddError("Username", "Nom d'utilisateur ou mot de passe invalide");
                     AddError("Password", "");
-                    Trace.WriteLine("invalid");
                 }
                 else
                 {
-                    _navigationService.NavigateTo<AccueilWindow>();
+                    bool isAdmin = user.Role == "Administrator";
+                    var calendarViewModel = new CalendarViewModel(Username, isAdmin);
+                    _navigationService.NavigateTo<AccueilWindow>(calendarViewModel); // Passez le ViewModel
                     _navigationService.Close(_window);
-                    Trace.WriteLine("logged in");
                 }
-
             }
         }
+
 
         private void ValidateProperty(string? propertyName)
         {
