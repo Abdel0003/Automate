@@ -10,10 +10,10 @@ namespace Automate.Models
     {
         Semis,
         Rempotage,
-        Recolte,
+        Entretien,
         Arrosage,
-        Commandes,
+        Recolte,
+        Commande,
         Speciale
-
     }
 }

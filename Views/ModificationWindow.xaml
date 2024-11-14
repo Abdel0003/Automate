@@ -28,7 +28,7 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel>
-                <!--Year Selection-->
+                <!--Year Selection--><!--
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 50 0 30">
                     <Button Style="{StaticResource button}">
                         <fa:ImageAwesome Icon="AngleLeft" Style="{StaticResource angle}"/>
@@ -43,10 +43,10 @@
                     <Button Style="{StaticResource button}">
                         <fa:ImageAwesome Icon="AngleRight" Style="{StaticResource angle}"/>
                     </Button>
-                </StackPanel>
+                </StackPanel>-->
 
                 <!--Mont Selection-->
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 50 0 30">
                     <Button Content="1" Style="{StaticResource buttonMonth}"/>
                     <Button Content="2" Style="{StaticResource buttonMonth}"/>
                     <Button Content="3" Style="{StaticResource buttonMonth}"/>
@@ -63,7 +63,7 @@
 
                 <Separator Height="0.8" Background="#cacaca" Margin="30 10"/>
 
-                <TextBlock Text="November" Foreground="#c73f69" FontSize="24" TextAlignment="Center" FontWeight="SemiBold" Margin="0 15 0 20"/>
+                <TextBlock Text="{Binding Month}" Foreground="#c73f69" FontSize="24" TextAlignment="Center" FontWeight="SemiBold" Margin="0 15 0 20"/>
 
                 <Calendar CalendarItemStyle="{DynamicResource CalendarCalendarItemStyle1}" 
                   CalendarDayButtonStyle="{DynamicResource CalendarCalendarDayButtonStyle1}" 
@@ -92,9 +92,10 @@
 
                 </StackPanel>
 
-                <TextBlock Text="5 tasks - 2 dates left" Foreground="#eba5bb" FontSize="16" Margin="35 0 20 0" />
-                
-                <!--Add Notes-->
+                <!--Message de statut des tâches-->
+                <TextBlock Text="{Binding StatusMessage}" Foreground="#eba5bb" FontSize="16" Margin="35 0 20 0" />
+
+                <!--Ajouter une tâche-->
                 <Border Background="#cd5278" CornerRadius="10" HorizontalAlignment="Center" Width="355" Margin="0 30 0 20" Padding="17 15 5 15" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -111,7 +112,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <fa:ImageAwesome Icon="Pencil" Width="15" Height="15" Foreground="#eba5bb"/>
-                                <TextBlock Text="Add Note" Name="lblNote" Style="{StaticResource textHint}" MouseDown="lblNote_MouseDown"/>
+                                <TextBlock Text="Ajouter une tâche" Name="lblNote" Style="{StaticResource textHint}" MouseDown="lblNote_MouseDown"/>
                                 <TextBlock x:Name="txtNote" Style="{StaticResource textBox}" DataContextChanged="txtNote_DataContextChanged"/>
                             </Grid>
 
@@ -135,13 +136,15 @@
                         </Button>
                     </Grid>
                 </Border>
-                
-                <!--Notes-->
-                <!--<local:Item Title="Note title" Time="09:45 - 10:30" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>
-                <local:Item Title="Note title" Time="09:45 - 10:30" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>
-                <local:Item Title="Note title" Time="09:45 - 10:30" Color="#f1f1f1" Icon="CheckCircle" IconBell="Bell"/>
-                <local:Item Title="Note title" Time="09:45 - 10:30" Color="#f1f1f1" Icon="CheckCircle" IconBell="Bell"/>
-                <local:Item Title="Note title" Time="09:45 - 10:30" Color="#f1f1f1" Icon="CheckCircle" IconBell="Bell"/>-->
+
+                <!--Liste des tâches-->
+                <ItemsControl ItemsSource="{Binding Taches}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <local:Item Title="{Binding Nom}" Time="{Binding Heure}" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
             </StackPanel>
 
         </Grid>

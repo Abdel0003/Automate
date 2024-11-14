@@ -34,8 +34,27 @@ namespace Automate.Models
 			set { _estCompletee = value; }
 		}
 
+        // Dictionnaire des tâches avec variantes de nom
+        private static readonly Dictionary<string, EnumTache> TacheMapping = new()
+        {
+            { "Semis", EnumTache.Semis },
+            { "Rempotage", EnumTache.Rempotage },
+            { "Entretien", EnumTache.Entretien },
+            { "Désherbage", EnumTache.Entretien },
+            { "Taille", EnumTache.Entretien },
+            { "Fertilisation", EnumTache.Entretien },
+            { "Arrosage", EnumTache.Arrosage },
+            { "Recolte", EnumTache.Recolte },
+            { "Récolte", EnumTache.Recolte },
+            { "Commande", EnumTache.Commande },
+            { "Commandes", EnumTache.Commande },
+            { "Événements spéciaux", EnumTache.Speciale },
+            { "Visites", EnumTache.Speciale },
+            { "Formations", EnumTache.Speciale }
+        };
 
-		public Tache(string nom)
+
+        public Tache(string nom)
         {
             this.Nom = nom;
 			this.EstCompletee = false;
@@ -47,42 +66,32 @@ namespace Automate.Models
 		{
 			if (string.IsNullOrEmpty(Nom))
 				throw new ArgumentNullException("Le nom est vide");
-			if (!Enum.IsDefined(typeof(EnumTache), Nom))
-				throw new ArgumentException("Le Nom ne fait pas partie de l'enumération des tâches.");
 
-			if (Nom == "Semis")
-				Legende = Brushes.Blue;
+            // Vérifie si le nom existe dans le dictionnaire de correspondances
+            if (!TacheMapping.TryGetValue(Nom, out var tacheEnum))
+                throw new ArgumentException("Le Nom ne fait pas partie de l'énumération des tâches.");
+            // Associe la couleur en fonction de l'énumération
+            Legende = tacheEnum switch
+            {
+                EnumTache.Semis => Brushes.Blue,
+                EnumTache.Rempotage => Brushes.Brown,
+                EnumTache.Entretien => Brushes.LightGreen,
+                EnumTache.Arrosage => Brushes.Cyan,
+                EnumTache.Recolte => Brushes.Green,
+                EnumTache.Commande => Brushes.Gold,
+                EnumTache.Speciale => Brushes.OrangeRed,
+                _ => Brushes.Orange
+            };
+        }
 
-			else if (Nom == "Rempotage")
-				Legende = Brushes.Brown;
 
-			else if (Nom == "Arrosage")
-				Legende = Brushes.Cyan;
-
-			else if (Nom == "Recolte")
-				Legende = Brushes.Green;
-
-			else if (Nom == "Commande")
-				Legende = Brushes.Gold;
-			
-			else if (Nom == "Speciale")
-				Legende = Brushes.OrangeRed;
-
-			else
-				Legende= Brushes.Orange;
-		}
-		
-
-		/// <summary>
-		/// On change le statut complété ou non de la tâche
-		/// </summary>
-		/// <param name="resultat">Résultat récupéré du calendrier</param>
-		public void ChangerStatutComplete(bool resultat)
-		{
-			if (resultat)
-				_estCompletee = true;
-			else
-				_estCompletee = false;
-		}
+        /// <summary>
+        /// On change le statut complété ou non de la tâche
+        /// </summary>
+        /// <param name="resultat">Résultat récupéré du calendrier</param>
+        public void ChangerStatutComplete(bool resultat)
+        {
+            EstCompletee = resultat;
+        }
     }
 }
