@@ -12,12 +12,21 @@ namespace Automate.Utils
     {
         private readonly IMongoDatabase _database;
         private readonly IMongoCollection<UserModel> _users;
+        private readonly IMongoCollection<Tache> _tacheCollection;
+
+        //public MongoDBService()
+        //{
+        //    var client = new MongoClient("mongodb+srv://atounaok:June7600@cluster0.rekox.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"); // URL du serveur MongoDB
+        //    var database = client.GetDatabase("VotreNomDeBaseDeDonnees");
+        //    _tacheCollection = database.GetCollection<Tache>("Taches");
+        //}
 
         public MongoDBService(string databaseName)
         {
             var client = new MongoClient("mongodb+srv://atounaok:June7600@cluster0.rekox.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"); // URL du serveur MongoDB
             _database = client.GetDatabase(databaseName);
             _users = _database.GetCollection<UserModel>("Users");
+            _tacheCollection = _database.GetCollection<Tache>("Taches");
         }
 
         public IMongoCollection<T> GetCollection<T>(string collectionName) 
@@ -33,6 +42,18 @@ namespace Automate.Utils
         public void RegisterUser(UserModel user)
         {
             _users.InsertOne(user);
+        }
+
+        public async Task AjouterTacheAsync(Tache tache)
+        {
+            await _tacheCollection.InsertOneAsync(tache);
+        }
+
+        public List<Tache> GetTasksByDate(DateTime date)
+        {
+            // Filtrer par date pour obtenir les tâches du jour sélectionné
+            var filter = Builders<Tache>.Filter.Eq("DateAjout", date.Date);
+            return _tacheCollection.Find(filter).ToList();
         }
 
     }

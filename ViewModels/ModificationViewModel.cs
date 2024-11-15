@@ -1,17 +1,28 @@
-﻿using System;
+﻿using MongoDB.Driver;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 using Automate.Models;
+using Automate.Utils;
 
 namespace Automate.ViewModels
 {
     public class ModificationViewModel : INotifyPropertyChanged
     {
+        private readonly MongoDBService _mongoDBService;
+        public ObservableCollection<Tache> Taches { get; set; } = new ObservableCollection<Tache>();
+
+        public ICommand AjouterTacheCommand { get; }
+
         private DateTime _selectedDate;
         private bool _isAdmin;
         private string _statusMessage;
+
         public string StatusMessage
         {
             get => _statusMessage;
@@ -22,14 +33,28 @@ namespace Automate.ViewModels
             }
         }
 
-        public ObservableCollection<Tache> Taches { get; set; } = new ObservableCollection<Tache>();
+        // Champs pour les nouvelles tâches
+        private string _nouveauNomTache;
+        public string NouveauNomTache
+        {
+            get => _nouveauNomTache;
+            set
+            {
+                _nouveauNomTache = value;
+                OnPropertyChanged();
+            }
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public ModificationViewModel(bool isAdmin)
         {
             _isAdmin = isAdmin;
+            _mongoDBService = new MongoDBService("AutomateDB");
+            AjouterTacheCommand = new RelayCommand(async () => await AjouterTacheAsync());
+
             SelectedDate = DateTime.Now; // Initialise avec la date actuelle
-            LoadTasks();
+            LoadTasks(); // Charger les tâches pour la date actuelle
         }
 
         // Propriétés pour le jour, le mois, et le jour de la semaine
@@ -50,6 +75,7 @@ namespace Automate.ViewModels
                     OnPropertyChanged(nameof(Day));
                     OnPropertyChanged(nameof(Month));
                     OnPropertyChanged(nameof(DayOfWeek));
+                    LoadTasks(); // Recharger les tâches pour la nouvelle date
                 }
             }
         }
@@ -73,12 +99,36 @@ namespace Automate.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
+        private async Task AjouterTacheAsync()
+        {
+            if (string.IsNullOrWhiteSpace(NouveauNomTache))
+            {
+                MessageBox.Show("Veuillez entrer un nom de tâche.");
+                return;
+            }
+
+            // Créez et insérez la tâche avec la date sélectionnée
+            var nouvelleTache = new Tache(NouveauNomTache)
+            {
+                DateAjout = SelectedDate // Utiliser la date sélectionnée
+            };
+
+            await _mongoDBService.AjouterTacheAsync(nouvelleTache);
+
+            // Ajoutez la tâche à la collection Observable pour mettre à jour l'affichage
+            Taches.Add(nouvelleTache);
+            NouveauNomTache = string.Empty; // Réinitialise le champ de texte
+            StatusMessage = $"{Taches.Count} tâches pour cette date"; // Mettre à jour le message de statut
+
+            MessageBox.Show("La tâche a été ajoutée avec succès.");
+        }
+
         private void LoadTasks()
         {
             Taches.Clear();
 
-            // Simulation de récupération des tâches depuis la base de données pour la date sélectionnée
-            var tasksFromDb = GetTasksFromDatabase(SelectedDate);
+            // Récupérer les tâches depuis MongoDB pour la date sélectionnée
+            var tasksFromDb = _mongoDBService.GetTasksByDate(SelectedDate);
 
             if (tasksFromDb.Count > 0)
             {
@@ -86,30 +136,14 @@ namespace Automate.ViewModels
                 {
                     Taches.Add(tache);
                 }
-                StatusMessage = $"{Taches.Count} tâches pour aujourd'hui";
+                StatusMessage = $"{Taches.Count} tâches pour cette date";
             }
             else
             {
-                StatusMessage = "Aucune tâche pour aujourd'hui";
+                StatusMessage = "Aucune tâche pour cette date";
             }
 
             OnPropertyChanged(nameof(Taches));
-        }
-
-        private ObservableCollection<Tache> GetTasksFromDatabase(DateTime date)
-        {
-            // Simuler une récupération de tâches en fonction de la date
-            // Remplacez cette section par un appel réel à la base de données
-            if (date.Day == DateTime.Now.Day) // Supposons qu'il y ait des tâches pour la date d'aujourd'hui
-            {
-                return new ObservableCollection<Tache>
-                {
-                    new Tache("Semis"),
-                    new Tache("Arrosage"),
-                    new Tache("Récolte")
-                };
-            }
-            return new ObservableCollection<Tache>(); // Retourne une liste vide pour les autres jours
         }
     }
 }

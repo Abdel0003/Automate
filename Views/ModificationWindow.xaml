@@ -103,7 +103,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <StackPanel>
+                        <StackPanel VerticalAlignment="Center">
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -112,11 +112,12 @@
                                 </Grid.ColumnDefinitions>
 
                                 <fa:ImageAwesome Icon="Pencil" Width="15" Height="15" Foreground="#eba5bb"/>
-                                <TextBlock Text="Ajouter une tâche" Name="lblNote" Style="{StaticResource textHint}" MouseDown="lblNote_MouseDown"/>
-                                <TextBlock x:Name="txtNote" Style="{StaticResource textBox}" DataContextChanged="txtNote_DataContextChanged"/>
+                                <!--<TextBlock Text="Ajouter une tâche" Name="lblNote" Style="{StaticResource textHint}" />-->
+                                <!--<TextBlock x:Name="txtNote" Style="{StaticResource textBox}" DataContextChanged="txtNote_DataContextChanged"/>-->
+                                <TextBox Text="{Binding NouveauNomTache, UpdateSourceTrigger=PropertyChanged}" Style="{StaticResource textBox2}" Width="250"/>
                             </Grid>
 
-                            <Separator Margin="0 12 0 11" Height="0.8" Background="#c14269"/>
+                            <!--<Separator Margin="0 12 0 11" Height="0.8" Background="#c14269"/>
 
                             <Grid>
                                 <Grid.ColumnDefinitions>
@@ -127,11 +128,11 @@
                                 <fa:ImageAwesome Icon="Bell" Width="15" Height="15" Foreground="#eba5bb"/>
                                 <TextBlock Text="_ _ : _ _ - _ _ : _ _" Name="lblTime" Style="{StaticResource textHint}" MouseDown="lblTime_MouseDown"/>
                                 <TextBlock x:Name="txtTime" Style="{StaticResource textBox}" DataContextChanged="txtTime_DataContextChanged"/>
-                            </Grid>
+                            </Grid>-->
 
                         </StackPanel>
 
-                        <Button Grid.Column="1" Style="{StaticResource button}">
+                        <Button Grid.Column="1" Style="{StaticResource button}" Command="{Binding AjouterTacheCommand}">
                             <fa:ImageAwesome Icon="PlusCircle" Width="28" Height="28" Foreground="#f9f9f9" />
                         </Button>
                     </Grid>
@@ -141,7 +142,8 @@
                 <ItemsControl ItemsSource="{Binding Taches}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <local:Item Title="{Binding Nom}" Time="{Binding Heure}" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>
+                            <!--<local:Item Title="{Binding Nom}" Time="{Binding Heure}" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>-->
+                            <local:Item Title="{Binding Nom}" Color="#eba5bb" Icon="CheckCircle" IconBell="BellSlash"/>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

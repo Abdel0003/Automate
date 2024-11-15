@@ -34,6 +34,8 @@ namespace Automate.Models
 			set { _estCompletee = value; }
 		}
 
+        public DateTime DateAjout { get; set; }
+
         // Dictionnaire des tâches avec variantes de nom
         private static readonly Dictionary<string, EnumTache> TacheMapping = new()
         {
@@ -58,6 +60,7 @@ namespace Automate.Models
         {
             this.Nom = nom;
 			this.EstCompletee = false;
+            DateAjout = DateTime.Now;
             ObtenirCouleurLegende();
         }
 		//"Semis", "Rempotage", "Entretien", "Arrosage", "Récolte", "Commandes", "Événements spéciaux"

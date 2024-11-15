@@ -12,6 +12,7 @@ namespace Automate.Models
         string Nom { get; set; }
         SolidColorBrush Legende { get; set; }
         bool EstCompletee { get; set; }
+        DateTime DateAjout { get; set; }
 
         void ObtenirCouleurLegende();
         void ChangerStatutComplete(bool resultat);
