@@ -21,7 +21,7 @@ namespace Automate.Utils
         /// <param name="databaseName">Nom de la base de données.</param>
         public MongoDBService(string databaseName)
         {
-            var client = new MongoClient("mongodb+srv://atounaok:June7600@cluster0.rekox.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
+            var client = new MongoClient("mongodb://localhost:27017");
             _database = client.GetDatabase(databaseName);
             _users = _database.GetCollection<UserModel>("Users");
             _tacheCollection = _database.GetCollection<Tache>("Taches");

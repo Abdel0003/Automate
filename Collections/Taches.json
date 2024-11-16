@@ -1,0 +1,14 @@
+{
+  {
+    "_id": "64a48a1b9fef9c1f84b4e733",
+    "Nom": "Semis",
+    "DateAjout": "2024-11-18T00:00:00Z",
+    "EstCritique": true
+  },
+  {
+    "_id": "64a48a1b9fef9c1f84b4e734",
+    "Nom": "Arrosage",
+    "DateAjout": "2024-11-20T00:00:00Z",
+    "EstCritique": false
+  }
+}

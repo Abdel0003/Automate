@@ -1,0 +1,15 @@
+﻿{
+  {
+    "_id": "64a48a1b9fef9c1f84b4e731",
+    "Username": "admin",
+    "Password": "admin123",
+    "Role": "Administrator"
+  },
+  {
+    "_id": "64a48a1b9fef9c1f84b4e732",
+    "Username": "user",
+    "Password": "user123",
+    "Role": "User"
+  }
+}
+
