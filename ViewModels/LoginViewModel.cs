@@ -4,59 +4,55 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 
 namespace Automate.ViewModels
 {
+    /// <summary>
+    /// ViewModel pour la gestion de l'authentification.
+    /// </summary>
     public class LoginViewModel : INotifyPropertyChanged, INotifyDataErrorInfo
     {
-        //Propriétés du ViewModel
-        private string? _username;
-        private string? _password;
+        // Services utilisés pour l'authentification et la navigation
         private readonly MongoDBService _mongoService;
         private readonly NavigationService _navigationService;
-        //référence à la vue
-        private Window _window;
 
-        //dictionnaire des erreurs de validation
-        private Dictionary<string, List<string>> _errors = new Dictionary<string, List<string>>();
+        // Référence à la fenêtre associée
+        private readonly Window _window;
 
-        //Gestionnaires d'événements 
+        // Propriétés privées
+        private string? _username;
+        private string? _password;
+        private readonly Dictionary<string, List<string>> _errors = new();
+
+        // Commandes
+        public ICommand AuthenticateCommand { get; }
+
+        // Événements
         public event PropertyChangedEventHandler? PropertyChanged;
         public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
 
-        //commandes utilisées par l'interface
-        public ICommand AuthenticateCommand { get; }
-        public bool HasErrors => _errors.Count > 0;
-        public bool HasPasswordErrors => _errors.ContainsKey(nameof(Password)) && _errors[nameof(Password)].Any();
-
-        //constructeur
+        // Constructeur
         public LoginViewModel(Window openedWindow)
         {
-            //instanciation de la BD
             _mongoService = new MongoDBService("AutomateDB");
-            AuthenticateCommand = new RelayCommand(Authenticate);
-
             _navigationService = new NavigationService();
             _window = openedWindow;
+
+            AuthenticateCommand = new RelayCommand(Authenticate);
         }
 
-        //propriétés
+        // Propriétés publiques
         public string? Username
         {
             get => _username;
             set
             {
-                //quand la valeur du textbox est modifiée, on valide les données et on avertit la vue
                 _username = value;
-                OnPropertyChanged(nameof(Username));
+                OnPropertyChanged();
                 ValidateProperty(nameof(Username));
             }
         }
@@ -67,7 +63,7 @@ namespace Automate.ViewModels
             set
             {
                 _password = value;
-                OnPropertyChanged(nameof(Password));
+                OnPropertyChanged();
                 ValidateProperty(nameof(Password));
             }
         }
@@ -76,73 +72,31 @@ namespace Automate.ViewModels
         {
             get
             {
-                var allErrors = new List<string>();
-                foreach (var errorList in _errors.Values)
-                {
-                    allErrors.AddRange(errorList);
-                }
-                // Retirer les chaînes vides et nulles
-                allErrors.RemoveAll(error => string.IsNullOrWhiteSpace(error));
-
-                return string.Join("\n", allErrors); // Joint les erreurs par une nouvelle ligne
+                // Concatène toutes les erreurs en une seule chaîne avec des sauts de ligne
+                return string.Join("\n", _errors.Values.SelectMany(e => e).Where(e => !string.IsNullOrWhiteSpace(e)));
             }
         }
 
-        //méthodes
-        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        public bool HasErrors => _errors.Count > 0;
+        public bool HasPasswordErrors => _errors.ContainsKey(nameof(Password)) && _errors[nameof(Password)].Any();
 
-        // LoginViewModel.cs
-        public void Authenticate()
-        {
-            ValidateProperty(nameof(Username));
-            ValidateProperty(nameof(Password));
-
-            if (!HasErrors)
-            {
-                var user = _mongoService.Authenticate(Username, Password);
-                if (user == null)
-                {
-                    AddError("Username", "Nom d'utilisateur ou mot de passe invalide");
-                    AddError("Password", "");
-                }
-                else
-                {
-                    bool isAdmin = user.Role == "Administrator";
-                    var calendarViewModel = new CalendarViewModel(Username, isAdmin);
-                    _navigationService.NavigateTo<AccueilWindow>(calendarViewModel); // Passez le ViewModel
-                    _navigationService.Close(_window);
-                }
-            }
-        }
-
-
+        // Méthodes de validation
         private void ValidateProperty(string? propertyName)
         {
             switch (propertyName)
             {
                 case nameof(Username):
                     if (string.IsNullOrEmpty(Username))
-                    {
                         AddError(nameof(Username), "Le nom d'utilisateur ne peut pas être vide.");
-                    }
                     else
-                    {
                         RemoveError(nameof(Username));
-                    }
                     break;
 
                 case nameof(Password):
                     if (string.IsNullOrEmpty(Password))
-                    {
                         AddError(nameof(Password), "Le mot de passe ne peut pas être vide.");
-                    }
                     else
-                    {
                         RemoveError(nameof(Password));
-                    }
                     break;
             }
         }
@@ -150,17 +104,13 @@ namespace Automate.ViewModels
         private void AddError(string propertyName, string errorMessage)
         {
             if (!_errors.ContainsKey(propertyName))
-            {
                 _errors[propertyName] = new List<string>();
-            }
+
             if (!_errors[propertyName].Contains(errorMessage))
             {
                 _errors[propertyName].Add(errorMessage);
-               ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
+                NotifyErrorChanged(propertyName);
             }
-            // Notifier les changements des propriétés
-            OnPropertyChanged(nameof(ErrorMessages));
-            OnPropertyChanged(nameof(HasPasswordErrors));
         }
 
         private void RemoveError(string propertyName)
@@ -168,22 +118,52 @@ namespace Automate.ViewModels
             if (_errors.ContainsKey(propertyName))
             {
                 _errors.Remove(propertyName);
-               ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName)); 
+                NotifyErrorChanged(propertyName);
             }
-            // Notifier les changements des propriétés
+        }
+
+        private void NotifyErrorChanged(string propertyName)
+        {
+            ErrorsChanged?.Invoke(this, new DataErrorsChangedEventArgs(propertyName));
             OnPropertyChanged(nameof(ErrorMessages));
             OnPropertyChanged(nameof(HasPasswordErrors));
         }
 
         public IEnumerable GetErrors(string? propertyName)
         {
-            if (string.IsNullOrEmpty(propertyName) || !_errors.ContainsKey(propertyName))
-            {
-                return Enumerable.Empty<string>();
-            }
-
-            return _errors[propertyName];
+            return string.IsNullOrEmpty(propertyName) || !_errors.ContainsKey(propertyName)
+                ? Enumerable.Empty<string>()
+                : _errors[propertyName];
         }
 
+        // Méthodes principales
+        public void Authenticate()
+        {
+            ValidateProperty(nameof(Username));
+            ValidateProperty(nameof(Password));
+
+            if (HasErrors) return;
+
+            var user = _mongoService.Authenticate(Username, Password);
+            if (user == null)
+            {
+                AddError(nameof(Username), "Nom d'utilisateur ou mot de passe invalide.");
+                AddError(nameof(Password), string.Empty);
+                return;
+            }
+
+            bool isAdmin = user.Role == "Administrator";
+            var calendarViewModel = new AccueilViewModel(Username, isAdmin);
+
+            // Navigue vers la fenêtre d'accueil
+            _navigationService.NavigateTo<AccueilWindow>(calendarViewModel);
+            _navigationService.Close(_window);
+        }
+
+        // Notification de changement de propriété
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

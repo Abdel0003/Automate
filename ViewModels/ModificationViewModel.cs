@@ -12,17 +12,29 @@ using Automate.Utils;
 
 namespace Automate.ViewModels
 {
+    /// <summary>
+    /// ViewModel pour la gestion des tâches dans la fenêtre de modification.
+    /// </summary>
     public class ModificationViewModel : INotifyPropertyChanged
     {
         private readonly MongoDBService _mongoDBService;
-        public ObservableCollection<Tache> Taches { get; set; } = new ObservableCollection<Tache>();
 
+        // Collection observable des tâches affichées
+        public ObservableCollection<Tache> Taches { get; private set; } = new ObservableCollection<Tache>();
+
+        // Commandes disponibles pour l'utilisateur
         public ICommand AjouterTacheCommand { get; }
+        public ICommand RefreshTasksCommand { get; }
 
+        // Champs privés
         private DateTime _selectedDate;
         private bool _isAdmin;
         private string _statusMessage;
+        private string _nouveauNomTache;
+        private string _selectedTaskType;
+        private bool _isTaskCritical;
 
+        // Propriétés publiques
         public string StatusMessage
         {
             get => _statusMessage;
@@ -33,8 +45,6 @@ namespace Automate.ViewModels
             }
         }
 
-        // Champs pour les nouvelles tâches
-        private string _nouveauNomTache;
         public string NouveauNomTache
         {
             get => _nouveauNomTache;
@@ -45,24 +55,30 @@ namespace Automate.ViewModels
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public ModificationViewModel(bool isAdmin)
+        public string SelectedTaskType
         {
-            _isAdmin = isAdmin;
-            _mongoDBService = new MongoDBService("AutomateDB");
-            AjouterTacheCommand = new RelayCommand(async () => await AjouterTacheAsync());
-
-            SelectedDate = DateTime.Now; // Initialise avec la date actuelle
-            LoadTasks(); // Charger les tâches pour la date actuelle
+            get => _selectedTaskType;
+            set
+            {
+                _selectedTaskType = value;
+                OnPropertyChanged();
+            }
         }
 
-        // Propriétés pour le jour, le mois, et le jour de la semaine
+        public bool IsTaskCritical
+        {
+            get => _isTaskCritical;
+            set
+            {
+                _isTaskCritical = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string Day => SelectedDate.Day.ToString();
         public string Month => SelectedDate.ToString("MMMM", new CultureInfo("fr-FR"));
         public string DayOfWeek => SelectedDate.ToString("dddd", new CultureInfo("fr-FR"));
 
-        // Propriété de la date sélectionnée
         public DateTime SelectedDate
         {
             get => _selectedDate;
@@ -75,12 +91,11 @@ namespace Automate.ViewModels
                     OnPropertyChanged(nameof(Day));
                     OnPropertyChanged(nameof(Month));
                     OnPropertyChanged(nameof(DayOfWeek));
-                    LoadTasks(); // Recharger les tâches pour la nouvelle date
+                    _ = LoadTasksAsync(); // Recharger les tâches pour la date sélectionnée
                 }
             }
         }
 
-        // Propriété indiquant si l'utilisateur est administrateur
         public bool IsAdmin
         {
             get => _isAdmin;
@@ -94,56 +109,100 @@ namespace Automate.ViewModels
             }
         }
 
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>
+        /// Constructeur du ViewModel.
+        /// </summary>
+        /// <param name="isAdmin">Indique si l'utilisateur est administrateur.</param>
+        public ModificationViewModel(bool isAdmin)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            _isAdmin = isAdmin;
+            _mongoDBService = new MongoDBService("AutomateDB");
+
+            // Initialisation des commandes
+            AjouterTacheCommand = new RelayCommand(async () => await AjouterTacheAsync());
+            RefreshTasksCommand = new RelayCommand(async () => await LoadTasksAsync());
+
+            SelectedDate = DateTime.Now;
+            _ = LoadTasksAsync(); // Chargement initial des tâches
         }
 
+        /// <summary>
+        /// Ajoute une nouvelle tâche à la base de données et à la collection locale.
+        /// </summary>
         private async Task AjouterTacheAsync()
         {
-            if (string.IsNullOrWhiteSpace(NouveauNomTache))
+            if (string.IsNullOrWhiteSpace(SelectedTaskType))
             {
-                MessageBox.Show("Veuillez entrer un nom de tâche.");
+                MessageBox.Show("Veuillez sélectionner un type de tâche.");
                 return;
             }
 
-            // Créez et insérez la tâche avec la date sélectionnée
-            var nouvelleTache = new Tache(NouveauNomTache)
+            string tacheNom = ExtractTaskName(SelectedTaskType);
+
+            var nouvelleTache = new Tache(tacheNom)
             {
-                DateAjout = SelectedDate // Utiliser la date sélectionnée
+                DateAjout = SelectedDate,
+                EstCritique = IsTaskCritical
             };
 
             await _mongoDBService.AjouterTacheAsync(nouvelleTache);
-
-            // Ajoutez la tâche à la collection Observable pour mettre à jour l'affichage
             Taches.Add(nouvelleTache);
-            NouveauNomTache = string.Empty; // Réinitialise le champ de texte
-            StatusMessage = $"{Taches.Count} tâches pour cette date"; // Mettre à jour le message de statut
 
-            MessageBox.Show("La tâche a été ajoutée avec succès.");
+            ResetTaskFields();
+
+            StatusMessage = $"{Taches.Count} tâche(s) pour cette date.";
+            MessageBox.Show("Tâche ajoutée avec succès.");
         }
 
-        private void LoadTasks()
+        /// <summary>
+        /// Charge les tâches pour la date sélectionnée depuis la base de données.
+        /// </summary>
+        private async Task LoadTasksAsync()
         {
             Taches.Clear();
-
-            // Récupérer les tâches depuis MongoDB pour la date sélectionnée
             var tasksFromDb = _mongoDBService.GetTasksByDate(SelectedDate);
 
-            if (tasksFromDb.Count > 0)
+            foreach (var tache in tasksFromDb)
             {
-                foreach (var tache in tasksFromDb)
-                {
-                    Taches.Add(tache);
-                }
-                StatusMessage = $"{Taches.Count} tâches pour cette date";
-            }
-            else
-            {
-                StatusMessage = "Aucune tâche pour cette date";
+                Taches.Add(tache);
             }
 
-            OnPropertyChanged(nameof(Taches));
+            StatusMessage = Taches.Count > 0
+                ? $"{Taches.Count} tâche(s) pour cette date."
+                : "Aucune tâche pour cette date.";
+        }
+
+        /// <summary>
+        /// Extrait le nom de la tâche à partir de la valeur brute sélectionnée.
+        /// </summary>
+        /// <param name="rawSelectedTaskType">Valeur brute sélectionnée.</param>
+        /// <returns>Nom de la tâche extrait.</returns>
+        private string ExtractTaskName(string rawSelectedTaskType)
+        {
+            return rawSelectedTaskType.Contains(":")
+                ? rawSelectedTaskType.Split(':')[1].Trim()
+                : rawSelectedTaskType;
+        }
+
+        /// <summary>
+        /// Réinitialise les champs liés à l'ajout de tâches.
+        /// </summary>
+        private void ResetTaskFields()
+        {
+            SelectedTaskType = null;
+            IsTaskCritical = false;
+            NouveauNomTache = string.Empty;
+        }
+
+        /// <summary>
+        /// Notifie les changements de propriété pour l'interface utilisateur.
+        /// </summary>
+        /// <param name="propertyName">Nom de la propriété modifiée.</param>
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

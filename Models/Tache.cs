@@ -1,97 +1,64 @@
-﻿using ModernWpf.Controls;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 
 namespace Automate.Models
 {
-    public class Tache :ITache
+    public class Tache : ITache
     {
-		private string _nom;
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string Id { get; set; } = ObjectId.GenerateNewId().ToString();
 
-		public string Nom
-		{
-			get { return _nom; }
-			set { _nom = value; }
-		}
+        [BsonElement("Nom")]
+        public string Nom { get; set; }
 
-		private SolidColorBrush _legende;
+        [BsonIgnore]
+        public SolidColorBrush Legende { get; private set; }
 
-		public SolidColorBrush Legende
-		{
-			get { return _legende; }
-			set { _legende= value; }
-		}
+        [BsonElement("EstCompletee")]
+        public bool EstCompletee { get; set; }
 
-		private bool _estCompletee;
+        [BsonElement("EstCritique")]
+        public bool EstCritique { get; set; }
 
-		public bool EstCompletee
-		{
-			get { return _estCompletee; }
-			set { _estCompletee = value; }
-		}
-
+        [BsonElement("DateAjout")]
         public DateTime DateAjout { get; set; }
-
-        // Dictionnaire des tâches avec variantes de nom
-        private static readonly Dictionary<string, EnumTache> TacheMapping = new()
-        {
-            { "Semis", EnumTache.Semis },
-            { "Rempotage", EnumTache.Rempotage },
-            { "Entretien", EnumTache.Entretien },
-            { "Désherbage", EnumTache.Entretien },
-            { "Taille", EnumTache.Entretien },
-            { "Fertilisation", EnumTache.Entretien },
-            { "Arrosage", EnumTache.Arrosage },
-            { "Recolte", EnumTache.Recolte },
-            { "Récolte", EnumTache.Recolte },
-            { "Commande", EnumTache.Commande },
-            { "Commandes", EnumTache.Commande },
-            { "Événements spéciaux", EnumTache.Speciale },
-            { "Visites", EnumTache.Speciale },
-            { "Formations", EnumTache.Speciale }
-        };
-
 
         public Tache(string nom)
         {
-            this.Nom = nom;
-			this.EstCompletee = false;
+            if (string.IsNullOrEmpty(nom))
+                throw new ArgumentNullException(nameof(nom), "Le nom de la tâche ne peut pas être vide.");
+
+            Nom = nom;
+            EstCompletee = false;
             DateAjout = DateTime.Now;
             ObtenirCouleurLegende();
         }
-		//"Semis", "Rempotage", "Entretien", "Arrosage", "Récolte", "Commandes", "Événements spéciaux"
 
-		public void ObtenirCouleurLegende()
-		{
-			if (string.IsNullOrEmpty(Nom))
-				throw new ArgumentNullException("Le nom est vide");
-
-            // Vérifie si le nom existe dans le dictionnaire de correspondances
-            if (!TacheMapping.TryGetValue(Nom, out var tacheEnum))
-                throw new ArgumentException("Le Nom ne fait pas partie de l'énumération des tâches.");
-            // Associe la couleur en fonction de l'énumération
-            Legende = tacheEnum switch
+        /// <summary>
+        /// Assigne une couleur légende en fonction du nom de la tâche.
+        /// </summary>
+        public void ObtenirCouleurLegende()
+        {
+            Legende = Nom.ToLower() switch
             {
-                EnumTache.Semis => Brushes.Blue,
-                EnumTache.Rempotage => Brushes.Brown,
-                EnumTache.Entretien => Brushes.LightGreen,
-                EnumTache.Arrosage => Brushes.Cyan,
-                EnumTache.Recolte => Brushes.Green,
-                EnumTache.Commande => Brushes.Gold,
-                EnumTache.Speciale => Brushes.OrangeRed,
-                _ => Brushes.Orange
+                "semis" => Brushes.Blue,
+                "rempotage" => Brushes.Brown,
+                "entretien" => Brushes.LightGreen,
+                "arrosage" => Brushes.Cyan,
+                "récolte" or "recolte" => Brushes.Green,
+                "commande" or "commandes" => Brushes.Gold,
+                "événements spéciaux" or "événements" or "speciale" => Brushes.OrangeRed,
+                _ => Brushes.Gray,
             };
         }
 
-
         /// <summary>
-        /// On change le statut complété ou non de la tâche
+        /// Change le statut complété de la tâche.
         /// </summary>
-        /// <param name="resultat">Résultat récupéré du calendrier</param>
+        /// <param name="resultat">Nouveau statut (complété ou non).</param>
         public void ChangerStatutComplete(bool resultat)
         {
             EstCompletee = resultat;

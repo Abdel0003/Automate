@@ -1,40 +1,43 @@
 ﻿using Automate.ViewModels;
 using Automate.Utils;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Automate
 {
     /// <summary>
-    /// Interaction logic for LoginWindow.xaml
+    /// Fenêtre de connexion.
+    /// Gère l'authentification de l'utilisateur.
     /// </summary>
     public partial class LoginWindow : Window
     {
+        /// <summary>
+        /// Constructeur de la fenêtre de connexion.
+        /// Initialise le DataContext avec le ViewModel associé.
+        /// </summary>
         public LoginWindow()
         {
             InitializeComponent();
             DataContext = new LoginViewModel(this);
         }
 
-        //pas le choix d'utiliser un événement, on ne peut pas BIND un password pour des raisons de sécurité
+        /// <summary>
+        /// Gestionnaire de l'événement PasswordChanged pour le PasswordBox.
+        /// Met à jour la propriété Password du ViewModel.
+        /// </summary>
+        /// <param name="sender">Élément source de l'événement.</param>
+        /// <param name="e">Arguments de l'événement PasswordChanged.</param>
         private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
         {
-            PasswordBox? passwordBox = sender as PasswordBox;
+            // Vérifie que l'élément source est un PasswordBox
+            if (sender is not PasswordBox passwordBox)
+                return;
+
+            // Met à jour la propriété Password dans le ViewModel si valide
             if (DataContext is LoginViewModel viewModel)
             {
-                viewModel.Password = passwordBox.Password; // Met à jour la propriété Password dans le ViewModel
+                viewModel.Password = passwordBox.Password;
             }
         }
     }
